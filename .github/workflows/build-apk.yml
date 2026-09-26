@@ -1,0 +1,55 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.27.4
+          channel: stable
+          cache: true
+
+      # build.gradle 无条件读取 android/key.properties，而它与 *.jks 均被 gitignore，
+      # 仓库内不存在。这里在 runner 上生成一次性自签名 keystore 供 release 构建使用。
+      - name: Generate CI signing keystore
+        run: |
+          keytool -genkeypair -v -noprompt \
+            -keystore "$GITHUB_WORKSPACE/android/ci-key.jks" \
+            -storepass 123456 -keypass 123456 -alias ci \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=PicHoro CI, OU=Dev, O=PicHoro, C=US"
+          {
+            echo "storePassword=123456"
+            echo "keyPassword=123456"
+            echo "keyAlias=ci"
+            echo "storeFile=$GITHUB_WORKSPACE/android/ci-key.jks"
+          } > "$GITHUB_WORKSPACE/android/key.properties"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build arm64 release APK
+        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PicHoro-arm64-v8a-release
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
