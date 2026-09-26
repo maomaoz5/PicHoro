@@ -14,13 +14,10 @@ class AwsImageUploadUtils {
       String secretAccessKey = configMap['secretAccessKey'] ?? '';
       String bucket = configMap['bucket'] ?? '';
       String endpoint = configMap['endpoint'] ?? '';
-      int? port;
-      if (endpoint.contains(':')) {
-        List<String> endpointList = endpoint.split(':');
-        endpoint = endpointList[0];
-        port = int.parse(endpointList[1]);
-      }
-      String region = configMap['region'] ?? 'None';
+      final parsedEndpoint = parseEndpoint(endpoint);
+      endpoint = parsedEndpoint.host;
+      int? port = parsedEndpoint.port;
+      String region = resolveAwsRegion(endpoint, configMap['region']);
       String uploadPath = configMap['uploadPath'] ?? 'None';
       String customUrl = configMap['customUrl'] ?? 'None';
       bool isS3PathStyle = configMap['isS3PathStyle'] ?? false;
@@ -100,13 +97,10 @@ class AwsImageUploadUtils {
       String secretAccessKey = configMapFromPictureKey['secretAccessKey'];
       String bucket = configMapFromPictureKey['bucket'];
       String endpoint = configMapFromPictureKey['endpoint'];
-      int? port;
-      if (endpoint.contains(':')) {
-        List<String> endpointList = endpoint.split(':');
-        endpoint = endpointList[0];
-        port = int.parse(endpointList[1]);
-      }
-      String region = configMapFromPictureKey['region'];
+      final parsedEndpoint = parseEndpoint(endpoint);
+      endpoint = parsedEndpoint.host;
+      int? port = parsedEndpoint.port;
+      String region = resolveAwsRegion(endpoint, configMapFromPictureKey['region']);
       String uploadPath = configMapFromPictureKey['uploadPath'];
       bool isEnableSSL = configMapFromPictureKey['isEnableSSL'] ?? true;
       if (uploadPath != 'None') {

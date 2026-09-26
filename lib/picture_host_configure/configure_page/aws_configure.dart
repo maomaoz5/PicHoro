@@ -307,9 +307,7 @@ class AwsConfigState extends State<AwsConfig> {
         customUrl = customUrl.substring(0, customUrl.length - 1);
       }
 
-      if (region.isEmpty) {
-        region = 'None';
-      }
+      region = resolveAwsRegion(endpoint, region);
       final awsConfig = AwsConfigModel(
           accessKeyID, secretAccessKey, bucket, endpoint, region, uploadPath, customUrl, isS3PathStyle, isEnableSSL);
       final awsConfigJson = jsonEncode(awsConfig);
@@ -338,14 +336,10 @@ class AwsConfigState extends State<AwsConfig> {
       String accessKeyID = configMap['accessKeyId'];
       String secretAccessKey = configMap['secretAccessKey'];
       String bucket = configMap['bucket'];
-      String endpoint = configMap['endpoint'];
-      int? port;
-      if (endpoint.contains(':')) {
-        List<String> endpointList = endpoint.split(':');
-        endpoint = endpointList[0];
-        port = int.parse(endpointList[1]);
-      }
-      String region = configMap['region'];
+      final parsedEndpoint = parseEndpoint(configMap['endpoint']);
+      String endpoint = parsedEndpoint.host;
+      int? port = parsedEndpoint.port;
+      String region = resolveAwsRegion(endpoint, configMap['region']);
       bool isEnableSSL = configMap['isEnableSSL'] ?? true;
       Minio minio;
       if (region == 'None') {

@@ -8,6 +8,7 @@ import 'package:minio/minio.dart';
 import 'package:horopic/picture_host_manage/common/download/common_service/base_download_manager.dart';
 import 'package:horopic/picture_host_manage/common/download/common_service/base_download_status.dart';
 import 'package:horopic/picture_host_manage/manage_api/aws_manage_api.dart';
+import 'package:horopic/utils/common_functions.dart';
 
 class DownloadManager extends BaseDownloadManager {
   static final DownloadManager _dm = DownloadManager._internal();
@@ -45,13 +46,11 @@ class DownloadManager extends BaseDownloadManager {
     String accessKeyId = configMap['accessKeyId'];
     String secretAccessKey = configMap['secretAccessKey'];
     String endpoint = configMap['endpoint'];
-    int? port;
-    if (endpoint.contains(':')) {
-      List<String> endpointList = endpoint.split(':');
-      endpoint = endpointList[0];
-      port = int.parse(endpointList[1]);
-    }
+    final parsedEndpoint = parseEndpoint(endpoint);
+    endpoint = parsedEndpoint.host;
+    int? port = parsedEndpoint.port;
     bool isEnableSSL = configMap['isEnableSSL'] ?? true;
+    region = resolveAwsRegion(endpoint, region);
     if (endpoint.contains('amazonaws.com')) {
       if (!endpoint.contains(region)) {
         endpoint = 's3.$region.amazonaws.com';

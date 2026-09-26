@@ -474,6 +474,43 @@ String getContentType(String ext) {
   }
 }
 
+/// 解析 S3 兼容平台的 endpoint，去除协议前缀和结尾斜杠，并安全提取端口号。
+/// 避免用户填入 https:// 前缀时，split(':') 把协议分隔符误当作端口分隔符，
+/// 进而对主机名调用 int.parse 触发 FormatException。
+({String host, int? port}) parseEndpoint(String rawEndpoint) {
+  String endpoint = rawEndpoint.trim();
+  if (endpoint.startsWith('https://')) {
+    endpoint = endpoint.substring('https://'.length);
+  } else if (endpoint.startsWith('http://')) {
+    endpoint = endpoint.substring('http://'.length);
+  }
+  while (endpoint.endsWith('/')) {
+    endpoint = endpoint.substring(0, endpoint.length - 1);
+  }
+  int? port;
+  int colonIndex = endpoint.lastIndexOf(':');
+  if (colonIndex != -1) {
+    int? parsedPort = int.tryParse(endpoint.substring(colonIndex + 1));
+    if (parsedPort != null) {
+      port = parsedPort;
+      endpoint = endpoint.substring(0, colonIndex);
+    }
+  }
+  return (host: endpoint, port: port);
+}
+
+/// 解析 S3 兼容平台的存储区域。
+/// Cloudflare R2 要求 region 固定为 'auto'，否则签名校验失败返回 Forbidden；
+/// 当 endpoint 为 R2 且用户未填写 region 时自动填充 'auto'，其余情况保持原值。
+String resolveAwsRegion(String endpoint, String? region) {
+  String trimmedRegion = (region ?? '').trim();
+  bool regionEmpty = trimmedRegion.isEmpty || trimmedRegion == 'None';
+  if (regionEmpty && endpoint.contains('r2.cloudflarestorage.com')) {
+    return 'auto';
+  }
+  return regionEmpty ? 'None' : trimmedRegion;
+}
+
 /// 格式化错误信息
 String formatErrorMessage(
   Map parameters,

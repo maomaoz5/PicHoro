@@ -27,13 +27,10 @@ class UploadManager extends BaseUploadManager {
     String secretAccessKey = configMap['secretAccessKey'];
     String bucket = configMap['bucket'];
     String endpoint = configMap['endpoint'];
-    int? port;
-    if (endpoint.contains(':')) {
-      List<String> endpointList = endpoint.split(':');
-      endpoint = endpointList[0];
-      port = int.parse(endpointList[1]);
-    }
-    String region = configMap['region'];
+    final parsedEndpoint = parseEndpoint(endpoint);
+    endpoint = parsedEndpoint.host;
+    int? port = parsedEndpoint.port;
+    String region = resolveAwsRegion(endpoint, configMap['region']);
     String uploadPath = configMap['uploadPath'];
     bool isEnableSSL = configMap['isEnableSSL'] ?? true;
     if (endpoint.contains('amazonaws.com')) {
