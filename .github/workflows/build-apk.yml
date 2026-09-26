@@ -46,7 +46,8 @@ jobs:
         run: flutter pub get
 
       - name: Build arm64 release APK
-        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+        # home_page.dart 存在非常量 IconData，release 的图标 tree-shaking 会失败，需禁用
+        run: flutter build apk --release --target-platform android-arm64 --split-per-abi --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
