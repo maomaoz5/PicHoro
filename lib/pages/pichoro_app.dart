@@ -66,7 +66,7 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final blurSigma = context.watch<AppInfoProvider>().blurSigma;
-    final blurAlpha = (0.96 - (blurSigma / 50) * 0.08).clamp(0.88, 0.96);
+    final blurAlpha = (0.75 - (blurSigma / 50) * 0.40).clamp(0.35, 0.75);
 
     return Scaffold(
       extendBody: true,
@@ -77,13 +77,13 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
             child: Container(
               decoration: BoxDecoration(
                 color: colorScheme.surface.withValues(alpha: blurAlpha),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(32),
                 border: Border.all(
                   color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                   width: 0.5,
@@ -132,17 +132,19 @@ class _CapsuleNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const barHeight = 64.0;
-    const indicatorWidth = 120.0;
+    const indicatorWidth = 76.0;
     const indicatorHeight = 44.0;
     const itemCount = 4;
+    const hPadding = 12.0;
 
     return SizedBox(
       height: barHeight,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final itemWidth = width / itemCount;
-          final indicatorLeft = itemWidth * (selectedIndex + 0.5) - indicatorWidth / 2;
+          final contentWidth = width - hPadding * 2;
+          final itemWidth = contentWidth / itemCount;
+          final indicatorLeft = hPadding + itemWidth * (selectedIndex + 0.5) - indicatorWidth / 2;
 
           return Stack(
             children: [
@@ -160,24 +162,27 @@ class _CapsuleNavBar extends StatelessWidget {
                   ),
                 ),
               ),
-              Row(
-                children: List.generate(itemCount, (i) {
-                  final item = _PicHoroAPPState._navItems[i];
-                  final isSelected = i == selectedIndex;
-                  return Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => onItemTapped(i),
-                      child: Center(
-                        child: Icon(
-                          isSelected ? item.selectedIcon : item.icon,
-                          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
-                          size: 24,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: hPadding),
+                child: Row(
+                  children: List.generate(itemCount, (i) {
+                    final item = _PicHoroAPPState._navItems[i];
+                    final isSelected = i == selectedIndex;
+                    return Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => onItemTapped(i),
+                        child: Center(
+                          child: Icon(
+                            isSelected ? item.selectedIcon : item.icon,
+                            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                            size: 24,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ],
           );
