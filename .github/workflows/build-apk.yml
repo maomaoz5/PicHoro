@@ -101,21 +101,37 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | head -n1 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s" "$PREV_TAG"..HEAD 2>/dev/null || echo "- Bug fixes and improvements")
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s" -20 2>/dev/null || echo "- Bug fixes and improvements")
+          fi
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- Bug fixes and improvements"
+          fi
+          # Write to file to avoid multiline env issues
+          echo "## 更新内容" > /tmp/changelog.md
+          echo "" >> /tmp/changelog.md
+          echo "$CHANGELOG" >> /tmp/changelog.md
+          echo "" >> /tmp/changelog.md
+          echo "### 安装说明" >> /tmp/changelog.md
+          echo "- **arm64-v8a**: 大多数现代 Android 手机（2017年后）" >> /tmp/changelog.md
+          echo "- **armeabi-v7a**: 较旧的 32 位设备" >> /tmp/changelog.md
+          echo "- **x86_64**: 模拟器 / 平板" >> /tmp/changelog.md
+          echo "" >> /tmp/changelog.md
+          echo "如果不确定选哪个，下载 **arm64-v8a** 版本。" >> /tmp/changelog.md
+
       - name: Create GitHub Release
         if: steps.check_release.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: PicHoro v${{ steps.version.outputs.version }}
-          body: |
-            ## PicHoro v${{ steps.version.outputs.version }}
-
-            ### 安装说明
-            - **arm64-v8a**: 大多数现代 Android 手机（2017年后）
-            - **armeabi-v7a**: 较旧的 32 位设备
-            - **x86_64**: 模拟器 / 平板
-
-            如果不确定选哪个，下载 **arm64-v8a** 版本。
+          body_path: /tmp/changelog.md
           files: apks/*.apk
           draft: false
           prerelease: false

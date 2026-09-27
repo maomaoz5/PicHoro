@@ -59,7 +59,7 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final blurSigma = context.watch<AppInfoProvider>().blurSigma;
-    final blurAlpha = (0.95 - (blurSigma / 40) * 0.2).clamp(0.72, 0.95);
+    final blurAlpha = (0.96 - (blurSigma / 50) * 0.08).clamp(0.88, 0.96);
 
     return Scaffold(
       extendBody: true,
@@ -77,11 +77,21 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
               decoration: BoxDecoration(
                 color: colorScheme.surface.withValues(alpha: blurAlpha),
                 borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  width: 0.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
-                    blurRadius: 16,
-                    offset: const Offset(0, 2),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 1),
                   ),
                 ],
               ),
