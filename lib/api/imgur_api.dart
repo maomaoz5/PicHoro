@@ -15,7 +15,7 @@ class ImgurImageUploadUtils {
     CancelToken? cancelToken,
   }) async {
     try {
-      String base64Image = base64Encode(File(path).readAsBytesSync());
+      String base64Image = base64Encode(await File(path).readAsBytes());
       FormData formdata = FormData.fromMap({
         "image": base64Image,
       });

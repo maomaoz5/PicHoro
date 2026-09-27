@@ -31,8 +31,27 @@ Future<File> localFile() async {
 }
 
 ///读取图床配置文件
+String? _cachedConfig;
+String? _cachedConfigKey;
+int _cacheTimestamp = 0;
+const _cacheDurationMs = 10000;
+
 Future<String> readPictureHostConfig() async {
-  return (await localFile()).readAsString();
+  final directory = await getApplicationDocumentsDirectory();
+  String defaultConfig = Global.getPShost();
+  String defaultUser = Global.getUser();
+  String configKey = '${defaultUser}_${getpdconfig(defaultConfig)}';
+  int now = DateTime.now().millisecondsSinceEpoch;
+
+  if (_cachedConfigKey == configKey && _cachedConfig != null && now - _cacheTimestamp < _cacheDurationMs) {
+    return _cachedConfig!;
+  }
+
+  String content = await File('${directory.path}/$configKey.txt').readAsString();
+  _cachedConfig = content;
+  _cachedConfigKey = configKey;
+  _cacheTimestamp = now;
+  return content;
 }
 
 uploaderentry({required String path, required String name}) async {

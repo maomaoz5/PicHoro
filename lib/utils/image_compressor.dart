@@ -28,7 +28,7 @@ Future<File> compressAndGetFile(String path, String fileName, String format,
       var dir = await getTemporaryDirectory();
       String fileNameWithoutExtension = fileName.split('.').first;
       String targetPath = "${dir.absolute.path}/$fileNameWithoutExtension.$format";
-      return File(targetPath)..writeAsBytesSync(result);
+      return await File(targetPath).writeAsBytes(result);
     }
 
     return File(path);

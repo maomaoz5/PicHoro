@@ -429,7 +429,7 @@ class GithubManageAPI extends BaseManageApi {
         List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
         await assetFile.writeAsBytes(bytes);
       }
-      String base64Image = base64Encode(File(assetFilePath).readAsBytesSync());
+      String base64Image = base64Encode(await File(assetFilePath).readAsBytes());
 
       Map<String, dynamic> queryBody = {
         'message': 'uploaded by PicHoro app',
@@ -481,7 +481,7 @@ class GithubManageAPI extends BaseManageApi {
     try {
       Map configMap = await getConfigMap();
       String token = configMap['token'];
-      String base64Image = base64Encode(File(filePath).readAsBytesSync());
+      String base64Image = base64Encode(await File(filePath).readAsBytes());
 
       Map<String, dynamic> queryBody = {
         'message': 'uploaded by PicHoro app',

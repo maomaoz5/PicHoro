@@ -48,16 +48,10 @@ class UploadManager extends BaseUploadManager {
     String urlPath = uploadPath + fileName;
     var file = await sftp.open(urlPath, mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
     int fileSize = File(path).lengthSync();
-    bool operateDone = false;
-    file.write(File(path).openRead().cast(), onProgress: (int sent) {
+    var write = file.write(File(path).openRead().cast(), onProgress: (int sent) {
       getUpload(fileName)?.progress.value = sent / fileSize;
-      if (sent == fileSize) {
-        operateDone = true;
-      }
     });
-    while (!operateDone) {
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
+    await write.done;
     client.close();
   }
 

@@ -21,7 +21,7 @@ class UploadManager extends BaseUploadManager {
   @override
   Future<void> performUpload(String path, String fileName, Map configMap, CancelToken cancelToken) async {
     Response response;
-    String base64Image = base64Encode(File(path).readAsBytesSync());
+    String base64Image = base64Encode(await File(path).readAsBytes());
     Map<String, dynamic> queryBody = {
       'message': 'uploaded by PicHoro app',
       'content': base64Image,

@@ -321,7 +321,6 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
         }
         try {
           Uri uri = Uri.parse(urlList[i]);
-          var response = await my_http.get(uri);
           String fileExt = '.jpg';
           String path = uri.path.toLowerCase();
           if (path.contains('.')) {
@@ -331,7 +330,16 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
           String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
           String randomString = randomStringGenerator(5);
           File file = File('$tempPath/Web$timeStamp$randomString.$fileExt');
-          await file.writeAsBytes(response.bodyBytes);
+
+          var httpClient = HttpClient();
+          var request = await httpClient.getUrl(uri);
+          var response = await request.close();
+          if (response.statusCode != 200) {
+            throw Exception('HTTP ${response.statusCode}');
+          }
+          await file.openWrite().addStream(response);
+          httpClient.close();
+
           Global.imageFile = file.path;
           File compressedFile = await processImageFile(file);
           Global.imagesList.add(Global.imageFile!);

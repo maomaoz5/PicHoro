@@ -38,16 +38,9 @@ class FTPImageUploadUtils {
           uploadPath = '/${uploadPath.replaceAll(RegExp(r'^/*|/*$'), '')}/';
           String urlPath = uploadPath + name;
           var file = await sftp.open(urlPath, mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
-          int fileSize = File(path).lengthSync();
-          bool operateDone = false;
-          file.write(File(path).openRead().cast(), onProgress: (int sent) {
-            if (sent == fileSize) {
-              operateDone = true;
-            }
+          var write = file.write(File(path).openRead().cast(), onProgress: (int sent) {
           });
-          while (!operateDone) {
-            await Future.delayed(const Duration(milliseconds: 100));
-          }
+          await write.done;
           client.close();
           String returnUrl = '';
           String displayUrl = '';

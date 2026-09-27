@@ -245,16 +245,9 @@ class FTPManageAPI extends BaseManageApi {
       }
       String urlPath = uploadPath + fileName;
       SftpFile file = await sftp.open(urlPath, mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
-      int fileSize = File(filePath).lengthSync();
-      bool operateDone = false;
-      file.write(File(filePath).openRead().cast(), onProgress: (int sent) {
-        if (sent == fileSize) {
-          operateDone = true;
-        }
+      var write = file.write(File(filePath).openRead().cast(), onProgress: (int sent) {
       });
-      while (!operateDone) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
+      await write.done;
       client.close();
       return ['success', ''];
     } catch (e) {
