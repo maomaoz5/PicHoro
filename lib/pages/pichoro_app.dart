@@ -66,16 +66,13 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.78),
-                border: Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-                  width: 0.5,
-                ),
+                color: colorScheme.surface.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),

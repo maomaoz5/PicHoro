@@ -1071,17 +1071,20 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
         floatingActionButton: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.88),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
-                    width: 0.5,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               _buildActionButton(

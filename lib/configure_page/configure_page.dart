@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import 'package:dio/dio.dart';
 import 'package:horopic/widgets/common_widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:ota_update/ota_update.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:fluro/fluro.dart';
 import 'package:provider/provider.dart';
 
@@ -27,12 +29,13 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
   bool _isLoading = false;
   bool _updateAvailable = false;
   DateTime? _lastVersionCheck;
-  StreamSubscription<OtaEvent>? _updateSubscription;
+  CancelToken? _downloadCancelToken;
+  bool _isDownloading = false;
   static const versionCheckInterval = Duration(minutes: 10);
 
   @override
   void dispose() {
-    _updateSubscription?.cancel();
+    _downloadCancelToken?.cancel();
     super.dispose();
   }
 
@@ -118,36 +121,44 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
         content: '发现新版本$latestVersion,当前版本$version,是否更新?',
         context: context,
         onConfirm: () async {
-          _updateSubscription?.cancel();
+          if (_isDownloading) return showToast('正在下载中，请稍候');
+          _downloadCancelToken?.cancel();
+          _downloadCancelToken = CancelToken();
           String url = 'https://github.com/maomaoz5/PicHoro/releases/download/v$latestVersion/PicHoro-v$latestVersion-arm64-v8a.apk';
+          String filename = 'PicHoro-v$latestVersion-arm64-v8a.apk';
           try {
-            _updateSubscription = OtaUpdate()
-                .execute(
+            final dir = await getApplicationDocumentsDirectory();
+            final savePath = '${dir.path}/$filename';
+            final file = File(savePath);
+            if (await file.exists()) await file.delete();
+
+            _isDownloading = true;
+            int lastShownPercent = -1;
+            await Dio().download(
               url,
-              destinationFilename: 'PicHoro-v$latestVersion-arm64-v8a.apk',
-            )
-                .listen(
-              (OtaEvent event) {
-                if (event.status == OtaStatus.DOWNLOADING) {
-                  showToast('下载进度：${event.value}%');
-                } else if (event.status == OtaStatus.INSTALLING) {
-                  showToast('正在安装更新...');
-                } else if (event.status == OtaStatus.DOWNLOAD_ERROR) {
-                  showToast('下载失败');
-                } else if (event.status == OtaStatus.PERMISSION_NOT_GRANTED_ERROR) {
-                  showToast('权限被拒绝，无法安装更新');
-                } else if (event.status == OtaStatus.ALREADY_RUNNING_ERROR) {
-                  showToast('更新正在进行中');
+              savePath,
+              cancelToken: _downloadCancelToken!,
+              onReceiveProgress: (count, total) {
+                if (total <= 0) return;
+                int percent = (count * 100 / total).round();
+                if (percent != lastShownPercent) {
+                  lastShownPercent = percent;
+                  showToast('下载进度：$percent%');
                 }
               },
-              onError: (error) {
-                showToast('更新失败：$error');
-              },
-              onDone: () {
-                _updateSubscription = null;
-              },
             );
+            _isDownloading = false;
+            showToast('下载完成，正在打开安装包');
+            OpenFilex.open(savePath, type: 'application/vnd.android.package-archive');
+          } on DioException catch (e) {
+            _isDownloading = false;
+            if (e.type == DioExceptionType.cancel) {
+              showToast('下载已取消');
+            } else {
+              showToast('下载失败：${e.message}');
+            }
           } catch (e) {
+            _isDownloading = false;
             showToast('更新失败：$e');
           }
         },
