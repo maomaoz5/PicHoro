@@ -52,7 +52,6 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
         version = info.version;
       });
     }
-
     _checkVersionInBackground();
   }
 
@@ -61,7 +60,6 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
     if (_lastVersionCheck != null && now.difference(_lastVersionCheck!) < versionCheckInterval) {
       return;
     }
-
     _lastVersionCheck = now;
 
     String remoteVersion = await getRemoteVersion();
@@ -71,14 +69,14 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
         _updateAvailable = _isUpdateAvailable(version, remoteVersion);
       });
     }
-    // No dialog shown for background checks
   }
 
   Future<String> getRemoteVersion() async {
-    const url = 'https://pichoro.msq.pub/version.json';
+    const url = 'https://api.github.com/repos/maomaoz5/PicHoro/releases/latest';
     try {
-      Response response = await Dio().get(url);
-      return response.data['version'];
+      Response response = await Dio().get(url, options: Options(headers: {'Accept': 'application/vnd.github+json'}));
+      String tagName = response.data['tag_name'] ?? '';
+      return tagName.replaceFirst('v', '');
     } catch (e) {
       return ' ';
     }
@@ -86,25 +84,15 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
 
   bool _isUpdateAvailable(String currentVersion, String remoteVersion) {
     if (remoteVersion == ' ') return false;
-
     try {
       List<int> currentParts = currentVersion.split('.').map((part) => int.parse(part)).toList();
-
       List<int> remoteParts = remoteVersion.split('.').map((part) => int.parse(part)).toList();
-
-      // Compare version segments
       for (int i = 0; i < currentParts.length && i < remoteParts.length; i++) {
-        if (remoteParts[i] > currentParts[i]) {
-          return true;
-        } else if (remoteParts[i] < currentParts[i]) {
-          return false;
-        }
+        if (remoteParts[i] > currentParts[i]) return true;
+        if (remoteParts[i] < currentParts[i]) return false;
       }
-
-      // If all compared segments are equal, check if remote has more segments
       return remoteParts.length > currentParts.length;
     } catch (e) {
-      // In case of parsing errors, fall back to string comparison
       return remoteVersion != currentVersion;
     }
   }
@@ -130,15 +118,13 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
         content: '发现新版本$latestVersion,当前版本$version,是否更新?',
         context: context,
         onConfirm: () async {
-          // Cancel any existing update subscription
           _updateSubscription?.cancel();
-
-          String url = 'https://pichoro.msq.pub/PicHoro_V$latestVersion.apk';
+          String url = 'https://github.com/maomaoz5/PicHoro/releases/download/v$latestVersion/PicHoro-v$latestVersion-arm64-v8a.apk';
           try {
             _updateSubscription = OtaUpdate()
                 .execute(
               url,
-              destinationFilename: 'PicHoro_V$latestVersion.apk',
+              destinationFilename: 'PicHoro-v$latestVersion-arm64-v8a.apk',
             )
                 .listen(
               (OtaEvent event) {
@@ -167,31 +153,18 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
         },
       );
     } else {
-      return showToast(
-        "已是最新版本",
-      );
+      return showToast("已是最新版本");
     }
   }
 
   Widget _buildSettingCard({required String title, required List<Widget> children}) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
           ...children,
         ],
@@ -207,23 +180,19 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
     Color? iconColor,
     Widget? subtitle,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final bgColor = iconColor ?? colorScheme.primary.withValues(alpha: 0.1);
+    final fgColor = iconColor ?? colorScheme.primary;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconColor ??
-              Theme.of(context).primaryColor.withValues(
-                    alpha: 0.2,
-                  ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: iconColor ?? Theme.of(context).primaryColor),
+        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: fgColor, size: 20),
       ),
       title: Text(title),
       subtitle: subtitle,
       onTap: onTap,
-      trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: trailing ?? Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
     );
   }
 
@@ -231,87 +200,99 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
   Widget build(BuildContext context) {
     super.build(context);
     final themeProvider = Provider.of<AppInfoProvider>(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        centerTitle: true,
         title: titleText('设置页面'),
         flexibleSpace: getFlexibleSpace(context),
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         children: [
-          AnimatedOpacity(
-            opacity: 1.0,
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 32.0),
-              decoration: BoxDecoration(
-                color: themeProvider.isDarkMode()
-                    ? Colors.black12
-                    : Theme.of(context).primaryColor.withValues(alpha: 0.05),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.08),
+                  colorScheme.primary.withValues(alpha: 0.02),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Hero(
-                    tag: 'app_logo',
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width / 8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width / 8),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width / 4,
-                          height: MediaQuery.of(context).size.width / 4,
-                          child: const Image(
-                            image: AssetImage('assets/app_icon.png'),
-                            fit: BoxFit.cover,
-                          ),
+            ),
+            child: Column(
+              children: [
+                Hero(
+                  tag: 'app_logo',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.15),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: const SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Image(image: AssetImage('assets/app_icon.png'), fit: BoxFit.cover),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  latestVersion == ' ' || latestVersion == version
-                      ? Text(
-                          'v$version',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'PicHoro',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                if (_updateAvailable)
+                  GestureDetector(
+                    onTap: _checkUpdate,
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.new_releases, color: colorScheme.onPrimaryContainer, size: 15),
+                          const SizedBox(width: 6),
+                          Text(
+                            'v$version  →  v$latestVersion',
+                            style: TextStyle(
+                              color: colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.new_releases, color: Colors.amber, size: 16),
-                              const SizedBox(width: 8),
-                              Text(
-                                '当前: v$version   最新: v$latestVersion',
-                                style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        ),
-                ],
-              ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    'v$version',
+                    style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
+                  ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           _buildSettingCard(
             title: '基础配置',
             children: [
@@ -344,23 +325,24 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                 title: _updateAvailable ? '有新版本！' : '检查更新',
                 icon: Icons.system_update,
                 onTap: _checkUpdate,
+                subtitle: _isLoading ? const Text('正在检查...') : null,
                 trailing: _updateAvailable
                     ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.upload, color: Colors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text('更新', style: TextStyle(color: Colors.white, fontSize: 12)),
+                            Icon(Icons.upload, color: colorScheme.onPrimaryContainer, size: 14),
+                            const SizedBox(width: 4),
+                            Text('更新', style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 12, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       )
-                    : const Icon(Icons.arrow_forward_ios, size: 16),
+                    : Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
               ),
               const Divider(height: 1, indent: 56),
               _buildSettingItem(

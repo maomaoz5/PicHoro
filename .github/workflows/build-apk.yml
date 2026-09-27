@@ -6,7 +6,16 @@ on:
     branches: [main]
 
 jobs:
-  build-arm64:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: arm64-v8a
+            platform: android-arm64
+          - arch: armeabi-v7a
+            platform: android-arm
+          - arch: x86_64
+            platform: android-x64
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,13 +30,10 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # pubspec.lock 要求 dart >=3.7.0 / flutter >=3.29.0，README 写的 3.27 已过时
           flutter-version: 3.29.3
           channel: stable
           cache: true
 
-      # build.gradle 无条件读取 android/key.properties，而它与 *.jks 均被 gitignore，
-      # 仓库内不存在。这里在 runner 上生成一次性自签名 keystore 供 release 构建使用。
       - name: Generate CI signing keystore
         run: |
           keytool -genkeypair -v -noprompt \
@@ -45,13 +51,82 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build arm64 release APK
-        # home_page.dart 存在非常量 IconData，release 的图标 tree-shaking 会失败，需禁用
-        run: flutter build apk --release --target-platform android-arm64 --split-per-abi --no-tree-shake-icons
+      - name: Get version from pubspec
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Upload APK
+      - name: Build release APK
+        run: flutter build apk --release --target-platform ${{ matrix.platform }} --split-per-abi --no-tree-shake-icons
+
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-${{ matrix.arch }}-release.apk \
+             build/app/outputs/flutter-apk/PicHoro-v${{ steps.version.outputs.version }}-${{ matrix.arch }}.apk
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PicHoro-arm64-v8a-release
-          path: build/app/outputs/flutter-apk/*.apk
+          name: PicHoro-${{ matrix.arch }}
+          path: build/app/outputs/flutter-apk/PicHoro-v${{ steps.version.outputs.version }}-${{ matrix.arch }}.apk
           if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from pubspec
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download all APK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: apks/
+          merge-multiple: true
+
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if gh release view "$TAG" --repo ${{ github.repository }} &>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: PicHoro v${{ steps.version.outputs.version }}
+          body: |
+            ## PicHoro v${{ steps.version.outputs.version }}
+
+            ### 安装说明
+            - **arm64-v8a**: 大多数现代 Android 手机（2017年后）
+            - **armeabi-v7a**: 较旧的 32 位设备
+            - **x86_64**: 模拟器 / 平板
+
+            如果不确定选哪个，下载 **arm64-v8a** 版本。
+          files: apks/*.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip release (already exists)
+        if: steps.check_release.outputs.exists == 'true'
+        run: echo "Release v${{ steps.version.outputs.version }} already exists, skipping."

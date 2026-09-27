@@ -5,11 +5,6 @@ import 'package:horopic/widgets/common_widgets.dart';
 class ConfigureWidgets {
   static Widget buildSettingCard({required String title, required List<Widget> children}) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -17,10 +12,7 @@ class ConfigureWidgets {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           ...children,
@@ -38,20 +30,19 @@ class ConfigureWidgets {
     Widget? subtitle,
     required BuildContext context,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final bgColor = iconColor ?? colorScheme.primary.withValues(alpha: 0.1);
+    final fgColor = iconColor ?? colorScheme.primary;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconColor ?? Theme.of(context).primaryColor.withAlpha(51),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: iconColor ?? Theme.of(context).primaryColor),
+        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: fgColor, size: 20),
       ),
       title: Text(title),
       subtitle: subtitle,
       onTap: onTap,
-      trailing: trailing,
+      trailing: trailing ?? Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
     );
   }
 
@@ -72,10 +63,6 @@ class ConfigureWidgets {
           labelText: labelText,
           hintText: hintText,
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
         validator: validator,
       ),
@@ -84,18 +71,13 @@ class ConfigureWidgets {
 
   static AppBar buildConfigAppBar({required String title, required BuildContext context}) {
     return AppBar(
-      elevation: 0,
-      centerTitle: true,
       leading: getLeadingIcon(context),
-      title: titleText(
-        title,
-        fontsize: 18,
-      ),
+      title: titleText(title, fontsize: 18),
       flexibleSpace: getFlexibleSpace(context),
     );
   }
 
   static Widget buildDivider() {
-    return const Divider(height: 1, indent: 56);
+    return const Divider();
   }
 }

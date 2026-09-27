@@ -39,7 +39,6 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
 
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
-
     setState(() {
       _selectedIndex = index;
       _pageController.jumpToPage(index);
@@ -48,60 +47,35 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: _pages,
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(theme),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(ThemeData theme) {
-    return Container(
-      decoration: const BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, -1),
-          ),
-        ],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: Colors.grey.shade600,
-        selectedFontSize: 12,
-        unselectedFontSize: 10,
-        elevation: 15,
-        backgroundColor: theme.colorScheme.surface,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: const <NavigationDestination>[
+          NavigationDestination(
             icon: Icon(Icons.file_upload_outlined),
-            activeIcon: Icon(Icons.file_upload),
+            selectedIcon: Icon(Icons.file_upload),
             label: '上传',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.photo_outlined),
-            activeIcon: Icon(Icons.photo),
+            selectedIcon: Icon(Icons.photo),
             label: '相册',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.storage_outlined),
-            activeIcon: Icon(Icons.storage),
+            selectedIcon: Icon(Icons.storage),
             label: '仓库',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
+            selectedIcon: Icon(Icons.settings),
             label: '设置',
           ),
         ],

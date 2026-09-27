@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flustars_flutter3/flustars_flutter3.dart';
 import 'package:horopic/configure_page/others/theme_data.dart';
 
-Map themeDataMap = {
+Map<String, ThemeData> themeDataMap = {
   'light': lightThemeData,
   'green': greenThemeData,
   'dark': darkThemeData,
