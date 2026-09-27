@@ -13,6 +13,7 @@ class NativeFeatures {
 
   static Future loadSystemFont() async {
     if (_systemFontLoaded) return;
+    if (!Platform.isAndroid) return;
     var fontLoader = FontLoader('SystemFont');
     var fontFilePath = await AndroidSystemFont().getFilePath();
     fontLoader.addFont(_readFileBytes(fontFilePath!));

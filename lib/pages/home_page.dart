@@ -67,6 +67,7 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
   }
 
   Future<void> _initIntent() async {
+    if (!Platform.isAndroid) return;
     final receivedIntent = await ic_intent.ReceiveIntent.getInitialIntent();
     if (!mounted) return;
 

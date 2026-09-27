@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 import 'package:external_path/external_path.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// 所有的数据库的图床表名
 List<String> allPBhost = [
@@ -55,8 +56,16 @@ class AlbumSQL {
     return await initDB(currentUserName);
   }
 
+  static Future<String> _getDatabasePath() async {
+    if (Platform.isAndroid) {
+      return await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOAD);
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    return dir.path;
+  }
+
   static initDB(String username) async {
-    var externalDirectoryPath = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOAD);
+    var externalDirectoryPath = await _getDatabasePath();
     var persistPath = '$externalDirectoryPath/PicHoro/Database';
     if (!await Directory(persistPath).exists()) {
       await Directory(persistPath).create(recursive: true);
@@ -97,7 +106,7 @@ class AlbumSQL {
   }
 
   static initExtendDB(String username) async {
-    var externalDirectoryPath = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOAD);
+    var externalDirectoryPath = await _getDatabasePath();
     var persistPath = '$externalDirectoryPath/PicHoro/Database';
     if (!await Directory(persistPath).exists()) {
       await Directory(persistPath).create(recursive: true);

@@ -588,17 +588,26 @@ Future<void> deleteApkFile() async {
 
 /// APPinit
 mainInit() async {
+  //初始化路由（放最前，保证即使后续初始化失败 app 也能启动）
+  FluroRouter router = FluroRouter();
+  Application.router = router;
+  Routes.configureRoutes(router);
+
   await SpUtil.getInstance();
-  await PermissionHelper.requestStoragePermission();
-  await PermissionHelper.requestCameraPermission();
-  await PermissionHelper.requestPhotoPermission();
-  await PermissionHelper.requestVideoPermission();
-  await PermissionHelper.requestAudioPermission();
-  await PermissionHelper.requestManageExternalStoragePermission();
-  await PermissionHelper.requestMediaLibraryAccess();
-  await PermissionHelper.requestInstallPackagePermission();
+  if (Platform.isAndroid) {
+    await PermissionHelper.requestStoragePermission();
+    await PermissionHelper.requestCameraPermission();
+    await PermissionHelper.requestPhotoPermission();
+    await PermissionHelper.requestVideoPermission();
+    await PermissionHelper.requestAudioPermission();
+    await PermissionHelper.requestManageExternalStoragePermission();
+    await PermissionHelper.requestMediaLibraryAccess();
+    await PermissionHelper.requestInstallPackagePermission();
+  }
   Global.setUser(Global.getUser());
-  deleteApkFile();
+  if (Platform.isAndroid) {
+    deleteApkFile();
+  }
   Global.setPassword(Global.getPassword());
   Global.setPShost(Global.getPShost());
   await ConfigureStoreFile().generateConfigureFile();
@@ -628,10 +637,6 @@ mainInit() async {
   //初始化扩展图床相册数据库
   await Global.setDatabaseExtend(await Global.getDatabaseExtend());
 
-  //初始化路由
-  FluroRouter router = FluroRouter();
-  Application.router = router;
-  Routes.configureRoutes(router);
   //初始化图床管理页面排列顺序
   List<String> psHostHomePageOrder = Global.getpsHostHomePageOrder();
   if (psHostHomePageOrder.length <= 22) {
