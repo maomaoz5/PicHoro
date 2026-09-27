@@ -1,10 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:horopic/pages/home_page.dart';
 import 'package:horopic/album/album_page.dart';
 import 'package:horopic/configure_page/configure_page.dart';
 import 'package:horopic/picture_host_manage/picture_host_manage_entry.dart';
+import 'package:horopic/utils/theme_provider.dart';
 
 class PicHoroAPP extends StatefulWidget {
   final int selectedIndex;
@@ -50,6 +52,8 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final blurSigma = context.watch<AppInfoProvider>().blurSigma;
+    final blurAlpha = (0.95 - (blurSigma / 40) * 0.2).clamp(0.72, 0.95);
 
     return Scaffold(
       extendBody: true,
@@ -63,10 +67,10 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
             child: Container(
               decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.88),
+                color: colorScheme.surface.withValues(alpha: blurAlpha),
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(

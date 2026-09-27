@@ -43,6 +43,9 @@ class AppInfoProvider with ChangeNotifier {
   String _keyThemeColor = ' ';
   String get keyThemeColor => _keyThemeColor;
 
+  double _blurSigma = 30;
+  double get blurSigma => _blurSigma;
+
   AppInfoProvider() {
     _initAsync();
   }
@@ -53,6 +56,7 @@ class AppInfoProvider with ChangeNotifier {
     await SpUtil.getInstance();
     String colorset = SpUtil.getString('key_theme_color', defValue: 'light')!;
     _keyThemeColor = colorset;
+    _blurSigma = SpUtil.getDouble('blur_sigma', defValue: 30.0) ?? 30.0;
     setTheme(colorset);
   }
 
@@ -65,6 +69,13 @@ class AppInfoProvider with ChangeNotifier {
     notifyListeners();
     await SpUtil.getInstance();
     SpUtil.putString('key_theme_color', _themeColor);
+  }
+
+  Future<void> setBlurSigma(double value) async {
+    _blurSigma = value;
+    notifyListeners();
+    await SpUtil.getInstance();
+    SpUtil.putDouble('blur_sigma', value);
   }
 
   ThemeData getThemeData() {

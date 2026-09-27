@@ -3,7 +3,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:horopic/widgets/common_widgets.dart';
+import 'package:horopic/utils/theme_provider.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -831,6 +833,8 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final blurSigma = context.watch<AppInfoProvider>().blurSigma;
+    final blurAlpha = (0.95 - (blurSigma / 40) * 0.2).clamp(0.72, 0.95);
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -1071,12 +1075,12 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
         floatingActionButton: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.88),
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: blurAlpha),
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(

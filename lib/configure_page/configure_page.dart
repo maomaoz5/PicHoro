@@ -314,6 +314,52 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                 Application.router.navigateTo(context, Routes.commonConfig, transition: TransitionType.cupertino),
           ),
 
+          // Appearance
+          _buildSectionHeader('外观'),
+          Consumer<AppInfoProvider>(
+            builder: (context, appInfo, child) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.blur_on, color: colorScheme.onPrimaryContainer, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('模糊强度', style: const TextStyle(fontSize: 15)),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              trackHeight: 4,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                            ),
+                            child: Slider(
+                              value: appInfo.blurSigma,
+                              min: 5,
+                              max: 50,
+                              divisions: 45,
+                              label: '${appInfo.blurSigma.round()}',
+                              onChanged: (value) => appInfo.setBlurSigma(value),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
           // App Info
           _buildSectionHeader('应用信息'),
           _buildSettingItem(
