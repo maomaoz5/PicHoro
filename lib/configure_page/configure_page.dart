@@ -170,15 +170,29 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          letterSpacing: 0.5,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSettingCard({required String title, required List<Widget> children}) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(title),
+          ...children,
+        ],
       ),
     );
   }
@@ -190,24 +204,30 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
     Widget? trailing,
     Color? iconColor,
     Widget? subtitle,
+    bool showDivider = true,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final bgColor = iconColor ?? colorScheme.primaryContainer;
     final fgColor = iconColor ?? colorScheme.onPrimaryContainer;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: fgColor, size: 20),
+          ),
+          title: Text(title, style: const TextStyle(fontSize: 15)),
+          subtitle: subtitle,
+          onTap: onTap,
+          trailing: trailing ?? Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
         ),
-        child: Icon(icon, color: fgColor, size: 20),
-      ),
-      title: Text(title, style: const TextStyle(fontSize: 15)),
-      subtitle: subtitle,
-      onTap: onTap,
-      trailing: trailing ?? Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
+        if (showDivider) const Divider(height: 1, indent: 56),
+      ],
     );
   }
 
@@ -300,119 +320,139 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
           ),
 
           // Basic Settings
-          _buildSectionHeader('基础配置'),
-          _buildSettingItem(
-            title: '图床参数设置',
-            icon: Icons.cloud_upload,
-            onTap: () =>
-                Application.router.navigateTo(context, Routes.allPShost, transition: TransitionType.cupertino),
-          ),
-          _buildSettingItem(
-            title: '常规设置',
-            icon: Icons.settings,
-            onTap: () =>
-                Application.router.navigateTo(context, Routes.commonConfig, transition: TransitionType.cupertino),
+          _buildSettingCard(
+            title: '基础配置',
+            children: [
+              _buildSettingItem(
+                title: '图床参数设置',
+                icon: Icons.cloud_upload,
+                onTap: () =>
+                    Application.router.navigateTo(context, Routes.allPShost, transition: TransitionType.cupertino),
+              ),
+              _buildSettingItem(
+                title: '常规设置',
+                icon: Icons.settings,
+                onTap: () =>
+                    Application.router.navigateTo(context, Routes.commonConfig, transition: TransitionType.cupertino),
+                showDivider: false,
+              ),
+            ],
           ),
 
           // Appearance
-          _buildSectionHeader('外观'),
-          Consumer<AppInfoProvider>(
-            builder: (context, appInfo, child) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.blur_on, color: colorScheme.onPrimaryContainer, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('模糊强度', style: const TextStyle(fontSize: 15)),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              trackHeight: 4,
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                            ),
-                            child: Slider(
-                              value: appInfo.blurSigma,
-                              min: 5,
-                              max: 50,
-                              divisions: 45,
-                              label: '${appInfo.blurSigma.round()}',
-                              onChanged: (value) => appInfo.setBlurSigma(value),
-                            ),
+          _buildSettingCard(
+            title: '外观',
+            children: [
+              Consumer<AppInfoProvider>(
+                builder: (context, appInfo, child) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        ],
-                      ),
+                          child: Icon(Icons.blur_on, color: colorScheme.onPrimaryContainer, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('模糊强度', style: const TextStyle(fontSize: 15)),
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  trackHeight: 4,
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                                ),
+                                child: Slider(
+                                  value: appInfo.blurSigma,
+                                  min: 5,
+                                  max: 50,
+                                  divisions: 45,
+                                  label: '${appInfo.blurSigma.round()}',
+                                  onChanged: (value) => appInfo.setBlurSigma(value),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ],
           ),
 
           // App Info
-          _buildSectionHeader('应用信息'),
-          _buildSettingItem(
-            title: '软件日志',
-            icon: Icons.description,
-            onTap: () => Application.router
-                .navigateTo(context, Routes.configurePageLogger, transition: TransitionType.cupertino),
-          ),
-          _buildSettingItem(
-            title: _updateAvailable ? '有新版本！' : '检查更新',
-            icon: Icons.system_update,
-            onTap: _checkUpdate,
-            subtitle: _isLoading ? const Text('正在检查...') : null,
-            trailing: _updateAvailable
-                ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.upload, color: colorScheme.onPrimaryContainer, size: 13),
-                        const SizedBox(width: 4),
-                        Text('更新', style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 11, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  )
-                : Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
-          ),
-          _buildSettingItem(
-            title: '更新日志',
-            icon: Icons.history,
-            onTap: () =>
-                Application.router.navigateTo(context, Routes.updateLog, transition: TransitionType.cupertino),
+          _buildSettingCard(
+            title: '应用信息',
+            children: [
+              _buildSettingItem(
+                title: '软件日志',
+                icon: Icons.description,
+                onTap: () => Application.router
+                    .navigateTo(context, Routes.configurePageLogger, transition: TransitionType.cupertino),
+              ),
+              _buildSettingItem(
+                title: _updateAvailable ? '有新版本！' : '检查更新',
+                icon: Icons.system_update,
+                onTap: _checkUpdate,
+                subtitle: _isLoading ? const Text('正在检查...') : null,
+                trailing: _updateAvailable
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.upload, color: colorScheme.onPrimaryContainer, size: 13),
+                            const SizedBox(width: 4),
+                            Text('更新', style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 11, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      )
+                    : Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
+              ),
+              _buildSettingItem(
+                title: '更新日志',
+                icon: Icons.history,
+                onTap: () =>
+                    Application.router.navigateTo(context, Routes.updateLog, transition: TransitionType.cupertino),
+                showDivider: false,
+              ),
+            ],
           ),
 
           // Help
-          _buildSectionHeader('帮助'),
-          _buildSettingItem(
-            title: '使用手册',
-            icon: Icons.menu_book,
-            onTap: () async {
-              Application.router.navigateTo(
-                context,
-                '${Routes.webviewPage}?url=${Uri.encodeComponent('https://pichoro.horosama.com')}&title=${Uri.encodeComponent('使用手册')}&enableJs=${Uri.encodeComponent('true')}',
-                transition: TransitionType.inFromRight,
-              );
-            },
+          _buildSettingCard(
+            title: '帮助',
+            children: [
+              _buildSettingItem(
+                title: '使用手册',
+                icon: Icons.menu_book,
+                onTap: () async {
+                  Application.router.navigateTo(
+                    context,
+                    '${Routes.webviewPage}?url=${Uri.encodeComponent('https://pichoro.horosama.com')}&title=${Uri.encodeComponent('使用手册')}&enableJs=${Uri.encodeComponent('true')}',
+                    transition: TransitionType.inFromRight,
+                  );
+                },
+                showDivider: false,
+              ),
+            ],
           ),
 
           const SizedBox(height: 32),
+          const SizedBox(height: 84),
         ],
       ),
     );

@@ -398,7 +398,9 @@ class PsHostHomePageState extends State<PsHostHomePage> with AutomaticKeepAliveC
           ),
         ],
       ),
-      body: Container(
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 84),
+        child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -449,6 +451,7 @@ class PsHostHomePageState extends State<PsHostHomePage> with AutomaticKeepAliveC
             },
           ),
         ),
+      ),
       ),
     );
   }

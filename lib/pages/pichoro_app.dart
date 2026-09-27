@@ -28,6 +28,13 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
     ConfigurePage(),
   ];
 
+  static const _navItems = <({IconData icon, IconData selectedIcon})>[
+    (icon: Icons.file_upload_outlined, selectedIcon: Icons.file_upload),
+    (icon: Icons.photo_outlined, selectedIcon: Icons.photo),
+    (icon: Icons.storage_outlined, selectedIcon: Icons.storage),
+    (icon: Icons.settings_outlined, selectedIcon: Icons.settings),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -70,13 +77,13 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
             child: Container(
               decoration: BoxDecoration(
                 color: colorScheme.surface.withValues(alpha: blurAlpha),
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                   width: 0.5,
@@ -97,41 +104,84 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
               ),
               child: SafeArea(
                 top: false,
-                child: NavigationBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  surfaceTintColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
+                child: _CapsuleNavBar(
                   selectedIndex: _selectedIndex,
-                  onDestinationSelected: _onItemTapped,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                  destinations: const <NavigationDestination>[
-                    NavigationDestination(
-                      icon: Icon(Icons.file_upload_outlined),
-                      selectedIcon: Icon(Icons.file_upload),
-                      label: '上传',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.photo_outlined),
-                      selectedIcon: Icon(Icons.photo),
-                      label: '相册',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.storage_outlined),
-                      selectedIcon: Icon(Icons.storage),
-                      label: '仓库',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.settings_outlined),
-                      selectedIcon: Icon(Icons.settings),
-                      label: '设置',
-                    ),
-                  ],
+                  onItemTapped: _onItemTapped,
+                  colorScheme: colorScheme,
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CapsuleNavBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onItemTapped;
+  final ColorScheme colorScheme;
+
+  const _CapsuleNavBar({
+    required this.selectedIndex,
+    required this.onItemTapped,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const barHeight = 64.0;
+    const indicatorWidth = 120.0;
+    const indicatorHeight = 44.0;
+    const itemCount = 4;
+
+    return SizedBox(
+      height: barHeight,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final itemWidth = width / itemCount;
+          final indicatorLeft = itemWidth * (selectedIndex + 0.5) - indicatorWidth / 2;
+
+          return Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                top: (barHeight - indicatorHeight) / 2,
+                left: indicatorLeft,
+                child: Container(
+                  width: indicatorWidth,
+                  height: indicatorHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(22),
+                    color: colorScheme.secondaryContainer.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              Row(
+                children: List.generate(itemCount, (i) {
+                  final item = _PicHoroAPPState._navItems[i];
+                  final isSelected = i == selectedIndex;
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onItemTapped(i),
+                      child: Center(
+                        child: Icon(
+                          isSelected ? item.selectedIcon : item.icon,
+                          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

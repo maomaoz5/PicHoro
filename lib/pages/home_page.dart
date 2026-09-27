@@ -1040,44 +1040,50 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
         ),
         body: uploadList.isEmpty
             ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/empty.png',
-                      width: 200,
-                      height: 200,
-                    ),
-                    const SizedBox(height: 32),
-                    Text('点击下方按钮上传图片',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        )),
-                    const SizedBox(height: 12),
-                    Text('当前图床: ${psNameTranslate[Global.defaultPShost]}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        )),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 84),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/empty.png',
+                        width: 200,
+                        height: 200,
+                      ),
+                      const SizedBox(height: 32),
+                      Text('点击下方按钮上传图片',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          )),
+                      const SizedBox(height: 12),
+                      Text('当前图床: ${psNameTranslate[Global.defaultPShost]}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          )),
+                    ],
+                  ),
                 ),
               )
             : SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 84),
                 child: Column(
                   children: _createUploadListItem(),
                 ),
               ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: ClipRRect(
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface.withValues(alpha: blurAlpha),
@@ -1186,7 +1192,7 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                 tooltip: '选择图床',
                 children: _buildSpeedDialChildren(),
               ),
-            ])))))  ;
+            ]))))));  // Row, Container, BackdropFilter, ClipRRect, Padding, Scaffold
   }
 
   Widget _buildActionButton(

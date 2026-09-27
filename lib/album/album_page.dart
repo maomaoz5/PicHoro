@@ -512,7 +512,7 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                         ? Center(child: Text(_isSearchMode ? '未找到匹配的图片' : '暂无图片'))
                         : GridView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 60),
+                            padding: const EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 90),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3,
                               childAspectRatio: 1,
