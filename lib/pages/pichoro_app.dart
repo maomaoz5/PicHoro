@@ -33,20 +33,26 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
     super.initState();
     _selectedIndex = widget.selectedIndex;
     _pageController = PageController(initialPage: _selectedIndex);
+    _pageController.addListener(_onPageChanged);
   }
 
   @override
   void dispose() {
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
   }
 
+  void _onPageChanged() {
+    final page = _pageController.page?.round();
+    if (page != null && page != _selectedIndex) {
+      setState(() => _selectedIndex = page);
+    }
+  }
+
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-      _pageController.jumpToPage(index);
-    });
+    _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   @override
@@ -59,7 +65,6 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
       extendBody: true,
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
         children: _pages,
       ),
       bottomNavigationBar: Padding(
