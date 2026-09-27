@@ -90,6 +90,27 @@ class Global {
   /// 图片压缩格式
   static String defaultCompressFormat = 'webp';
 
+  /// 是否添加水印
+  static bool isWatermark = false;
+
+  /// 水印模式: text / image
+  static String watermarkMode = 'text';
+
+  /// 水印文字内容
+  static String watermarkText = '';
+
+  /// 水印图片路径
+  static String watermarkImagePath = '';
+
+  /// 水印位置: topLeft / topRight / bottomLeft / bottomRight / center
+  static String watermarkPosition = 'bottomRight';
+
+  /// 水印透明度: 0.0 ~ 1.0
+  static double watermarkOpacity = 0.5;
+
+  /// 水印大小: small / medium / large
+  static String watermarkFontSize = 'medium';
+
   /// 默认网络请求超时时间
   static int defaultOutTime = 30000;
 
@@ -627,6 +648,69 @@ class Global {
   static void setDefaultCompressFormat(String defaultCompressFormat) {
     SpUtil.putString('key_defaultCompressFormat', defaultCompressFormat);
     Global.defaultCompressFormat = defaultCompressFormat;
+  }
+
+  static bool getIsWatermark() {
+    return SpUtil.getBool('key_isWatermark', defValue: false)!;
+  }
+
+  static void setIsWatermark(bool value) {
+    SpUtil.putBool('key_isWatermark', value);
+    Global.isWatermark = value;
+  }
+
+  static String getWatermarkMode() {
+    return SpUtil.getString('key_watermarkMode', defValue: 'text')!;
+  }
+
+  static void setWatermarkMode(String value) {
+    SpUtil.putString('key_watermarkMode', value);
+    Global.watermarkMode = value;
+  }
+
+  static String getWatermarkText() {
+    return SpUtil.getString('key_watermarkText', defValue: '')!;
+  }
+
+  static void setWatermarkText(String value) {
+    SpUtil.putString('key_watermarkText', value);
+    Global.watermarkText = value;
+  }
+
+  static String getWatermarkImagePath() {
+    return SpUtil.getString('key_watermarkImagePath', defValue: '')!;
+  }
+
+  static void setWatermarkImagePath(String value) {
+    SpUtil.putString('key_watermarkImagePath', value);
+    Global.watermarkImagePath = value;
+  }
+
+  static String getWatermarkPosition() {
+    return SpUtil.getString('key_watermarkPosition', defValue: 'bottomRight')!;
+  }
+
+  static void setWatermarkPosition(String value) {
+    SpUtil.putString('key_watermarkPosition', value);
+    Global.watermarkPosition = value;
+  }
+
+  static double getWatermarkOpacity() {
+    return SpUtil.getDouble('key_watermarkOpacity', defValue: 0.5)!;
+  }
+
+  static void setWatermarkOpacity(double value) {
+    SpUtil.putDouble('key_watermarkOpacity', value);
+    Global.watermarkOpacity = value;
+  }
+
+  static String getWatermarkFontSize() {
+    return SpUtil.getString('key_watermarkFontSize', defValue: 'medium')!;
+  }
+
+  static void setWatermarkFontSize(String value) {
+    SpUtil.putString('key_watermarkFontSize', value);
+    Global.watermarkFontSize = value;
   }
 
   static void setpsHostHomePageOrder(List<String> psHostHomePageOrder) {

@@ -158,6 +158,29 @@ class CommonConfigState extends State<CommonConfig> {
                       .navigateTo(context, Routes.compressConfigurePage, transition: TransitionType.cupertino);
                 },
               ),
+              const Divider(height: 1, indent: 56),
+              _buildSettingItem(
+                title: '上传前是否添加水印',
+                icon: Icons.water_drop,
+                subtitle: const Text('支持文字和图片水印'),
+                onTap: () {},
+                trailing: Switch(
+                  value: Global.isWatermark,
+                  onChanged: (value) async {
+                    Global.setIsWatermark(value);
+                    setState(() {});
+                  },
+                ),
+              ),
+              const Divider(height: 1, indent: 56),
+              _buildSettingItem(
+                title: '水印细节设置',
+                icon: Icons.style,
+                onTap: () {
+                  Application.router
+                      .navigateTo(context, Routes.watermarkConfigurePage, transition: TransitionType.cupertino);
+                },
+              ),
             ],
           ),
           _buildSettingCard(

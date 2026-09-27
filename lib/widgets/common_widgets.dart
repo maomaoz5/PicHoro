@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
 
 Widget getFlexibleSpace(BuildContext context) {
-  final colorScheme = Theme.of(context).colorScheme;
-  return Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          colorScheme.primary,
-          colorScheme.primary.withValues(alpha: 0.85),
-        ],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ),
-    ),
-  );
+  return const SizedBox.shrink();
 }
 
 Widget getLeadingIcon(BuildContext context) {
-  final foregroundColor = Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).colorScheme.onPrimary;
+  final foregroundColor = Theme.of(context).colorScheme.onSurface;
   return IconButton(
-    icon: Icon(Icons.arrow_back_ios, size: 20, color: foregroundColor),
+    icon: Icon(Icons.arrow_back_ios_new, size: 20, color: foregroundColor),
     onPressed: () => Navigator.pop(context),
   );
 }

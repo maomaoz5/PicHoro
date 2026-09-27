@@ -303,6 +303,33 @@ class AllPShostState extends State<AllPShost> {
                   }
                 },
               ),
+              const Divider(height: 1, indent: 56),
+              _buildSettingItem(
+                title: '从剪贴板导入配置',
+                icon: Icons.content_paste,
+                onTap: () async {
+                  final clipboardData = await Clipboard.getData('text/plain');
+                  if (clipboardData == null || clipboardData.text == null || clipboardData.text!.isEmpty) {
+                    return showToast('剪贴板为空');
+                  }
+                  try {
+                    Global.qrScanResult = clipboardData.text!;
+                    showDialog(
+                      context: this.context,
+                      barrierDismissible: false,
+                      builder: (context) => NetLoadingDialog(
+                        outsideDismiss: false,
+                        loading: true,
+                        loadingText: "配置中...",
+                        requestCallBack: processingQRCodeResult(),
+                      ),
+                    );
+                  } catch (e) {
+                    _logError('importFromClipboard', {}, e);
+                    showToast('导入失败');
+                  }
+                },
+              ),
             ],
           ),
           _buildSettingCard(

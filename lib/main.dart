@@ -50,7 +50,7 @@ class MyAppState extends State<MyApp> {
         return MaterialApp(
           title: 'PicHoro',
           debugShowCheckedModeBanner: false,
-          theme: themeDataMap[appInfo.keyThemeColor]!,
+          theme: appInfo.getThemeData(),
           initialRoute: '/',
           onGenerateRoute: Application.router.generator,
           builder: EasyLoading.init(),

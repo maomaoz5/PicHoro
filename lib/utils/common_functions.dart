@@ -323,14 +323,19 @@ showToastWithContext(
 
 /// title text
 Widget titleText(String title,
-    {double? fontsize = 20, FontWeight fontWeight = FontWeight.bold, Color? color = Colors.white}) {
-  return Text(
-    title,
-    style: TextStyle(
-      fontSize: fontsize,
-      color: color,
-      fontWeight: fontWeight,
-    ),
+    {double? fontsize = 20, FontWeight fontWeight = FontWeight.bold, Color? color}) {
+  return Builder(
+    builder: (context) {
+      final resolvedColor = color ?? Theme.of(context).colorScheme.onSurface;
+      return Text(
+        title,
+        style: TextStyle(
+          fontSize: fontsize,
+          color: resolvedColor,
+          fontWeight: fontWeight,
+        ),
+      );
+    },
   );
 }
 
@@ -631,6 +636,15 @@ mainInit() async {
   Global.setminHeight(Global.getminHeight());
   Global.setQuality(Global.getQuality());
   Global.setDefaultCompressFormat(Global.getDefaultCompressFormat());
+
+  //初始化水印选项
+  Global.setIsWatermark(Global.getIsWatermark());
+  Global.setWatermarkMode(Global.getWatermarkMode());
+  Global.setWatermarkText(Global.getWatermarkText());
+  Global.setWatermarkImagePath(Global.getWatermarkImagePath());
+  Global.setWatermarkPosition(Global.getWatermarkPosition());
+  Global.setWatermarkOpacity(Global.getWatermarkOpacity());
+  Global.setWatermarkFontSize(Global.getWatermarkFontSize());
 
   //初始化图床相册数据库
   await Global.setDatabase(await Global.getDatabase());

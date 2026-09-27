@@ -19,6 +19,7 @@ import 'package:horopic/configure_page/common_configure/select_link_format.dart'
 import 'package:horopic/configure_page/common_configure/select_default_picture_host.dart';
 import 'package:horopic/configure_page/common_configure/rename_uploaded_file.dart';
 import 'package:horopic/configure_page/common_configure/compress_configure.dart';
+import 'package:horopic/configure_page/common_configure/watermark_configure.dart';
 import 'package:horopic/configure_page/others/update_log.dart';
 import 'package:horopic/configure_page/others/select_theme.dart';
 
@@ -162,6 +163,11 @@ var configurePageHandler = Handler(handlerFunc: (BuildContext? context, Map<Stri
 ///图片压缩设置页面
 var compressConfigureHandler = Handler(handlerFunc: (BuildContext? context, Map<String, List<String>> params) {
   return const CompressConfigure();
+});
+
+///水印设置页面
+var watermarkConfigureHandler = Handler(handlerFunc: (BuildContext? context, Map<String, List<String>> params) {
+  return const WatermarkConfigure();
 });
 
 ///日志

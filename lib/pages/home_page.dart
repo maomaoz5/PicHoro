@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:flutter/services.dart' as flutter_services;
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:http/http.dart' as my_http;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as my_path;
 import 'package:receive_intent/receive_intent.dart' as ic_intent;
@@ -19,6 +19,7 @@ import 'package:horopic/utils/event_bus_utils.dart';
 import 'package:horopic/widgets/net_loading_dialog.dart';
 import 'package:horopic/picture_host_configure/default_picture_host_select.dart';
 import 'package:horopic/utils/common_functions.dart';
+import 'package:horopic/utils/watermark.dart';
 import 'package:horopic/utils/global.dart';
 import 'package:horopic/utils/uploader.dart';
 import 'package:horopic/pages/upload_helper/home_page_uploadlist.dart';
@@ -841,9 +842,9 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
           flexibleSpace: getFlexibleSpace(context),
           actions: [
             PopupMenuButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.settings,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 26,
                 ),
                 position: PopupMenuPosition.under,
@@ -1040,16 +1041,24 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                   children: [
                     Image.asset(
                       'assets/images/empty.png',
-                      width: 180,
-                      height: 180,
+                      width: 200,
+                      height: 200,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
                     Text('点击下方按钮上传图片',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18, color: Theme.of(context).primaryColor.withValues(alpha: 0.7))),
-                    const SizedBox(height: 10),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        )),
+                    const SizedBox(height: 12),
                     Text('当前图床: ${psNameTranslate[Global.defaultPShost]}',
-                        textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        )),
                   ],
                 ),
               )
@@ -1059,23 +1068,25 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                 ),
               ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  spreadRadius: 1,
+        floatingActionButton: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    width: 0.5,
+                  ),
                 ),
-              ],
-            ),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               _buildActionButton(
-                color: const Color.fromARGB(255, 180, 236, 182),
+                color: Theme.of(context).colorScheme.primaryContainer,
+                iconColor: Theme.of(context).colorScheme.onPrimaryContainer,
                 icon: Icons.camera_alt_outlined,
                 tooltip: '拍照上传',
                 onPressed: () async {
@@ -1104,7 +1115,8 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                 },
               ),
               _buildActionButton(
-                color: const Color.fromARGB(255, 112, 215, 247),
+                color: Theme.of(context).colorScheme.tertiaryContainer,
+                iconColor: Theme.of(context).colorScheme.onTertiaryContainer,
                 icon: Icons.image_outlined,
                 tooltip: '从相册选择',
                 onPressed: () async {
@@ -1113,7 +1125,8 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                 },
               ),
               _buildActionButton(
-                color: const Color.fromARGB(255, 237, 201, 241),
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                iconColor: Theme.of(context).colorScheme.onSecondaryContainer,
                 icon: Icons.camera,
                 tooltip: '连续拍照',
                 onPressed: () {
@@ -1121,7 +1134,8 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
                 },
               ),
               _buildActionButton(
-                color: const Color.fromARGB(255, 248, 231, 136),
+                color: Theme.of(context).colorScheme.primaryContainer,
+                iconColor: Theme.of(context).colorScheme.onPrimaryContainer,
                 icon: Icons.wifi,
                 tooltip: '从网络获取',
                 onPressed: () async {
@@ -1141,41 +1155,44 @@ class HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<H
               ),
               SpeedDial(
                 activeIcon: Icons.close,
-                activeForegroundColor: Colors.white,
-                activeBackgroundColor: Colors.redAccent,
+                activeForegroundColor: Theme.of(context).colorScheme.onError,
+                activeBackgroundColor: Theme.of(context).colorScheme.error,
                 renderOverlay: true,
                 overlayOpacity: 0.5,
                 buttonSize: const Size(40, 40),
                 childrenButtonSize: const Size(40, 40),
                 animatedIcon: AnimatedIcons.menu_close,
-                animatedIconTheme: const IconThemeData(color: Colors.white, size: 25.0),
-                backgroundColor: Colors.blue,
+                animatedIconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary, size: 25.0),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 visible: true,
                 curve: Curves.bounceIn,
                 tooltip: '选择图床',
                 children: _buildSpeedDialChildren(),
               ),
-            ])));
+            ])))))  ;
   }
 
   Widget _buildActionButton(
-      {required Color color, required IconData icon, required Function() onPressed, required String tooltip}) {
-    return SizedBox(
-        height: 40,
-        width: 40,
-        child: FloatingActionButton(
-          heroTag: icon.toString(),
-          backgroundColor: color,
-          tooltip: tooltip,
-          onPressed: onPressed,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
-        ));
+      {required Color color, Color? iconColor, required IconData icon, required Function() onPressed, required String tooltip}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: SizedBox(
+          height: 44,
+          width: 44,
+          child: FloatingActionButton(
+            heroTag: icon.toString(),
+            backgroundColor: color,
+            foregroundColor: iconColor,
+            tooltip: tooltip,
+            onPressed: onPressed,
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Icon(
+              icon,
+              size: 22,
+            ),
+          )),
+    );
   }
 }
 
@@ -1218,17 +1235,21 @@ Future<File> processImageFile(File imageFile) async {
     fileName = my_path.basename(imageFile.path);
   }
   Global.imageFile = fileName;
+  File processedFile = imageFile;
+  if (Global.isWatermark) {
+    processedFile = await applyWatermarkIfNeeded(processedFile);
+  }
   File compressedFile;
   if (Global.isCompress) {
     compressedFile = await compressAndGetFile(
-        imageFile.path, my_path.basename(Global.imageFile!), Global.defaultCompressFormat,
+        processedFile.path, my_path.basename(Global.imageFile!), Global.defaultCompressFormat,
         minHeight: Global.minHeight, minWidth: Global.minWidth, quality: Global.quality);
     String directory = my_path.dirname(Global.imageFile!);
     directory = directory == '.' ? '' : directory;
     String compressedFileName = my_path.basename(compressedFile.path);
     Global.imageFile = directory.isEmpty ? compressedFileName : '$directory/$compressedFileName';
   } else {
-    compressedFile = imageFile;
+    compressedFile = processedFile;
   }
   return compressedFile;
 }

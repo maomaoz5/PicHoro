@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:horopic/pages/home_page.dart';
 import 'package:horopic/album/album_page.dart';
@@ -47,38 +49,73 @@ class _PicHoroAPPState extends State<PicHoroAPP> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
+      extendBody: true,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: _pages,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: const <NavigationDestination>[
-          NavigationDestination(
-            icon: Icon(Icons.file_upload_outlined),
-            selectedIcon: Icon(Icons.file_upload),
-            label: '上传',
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface.withValues(alpha: 0.78),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+                  width: 0.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: NavigationBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: _onItemTapped,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                  destinations: const <NavigationDestination>[
+                    NavigationDestination(
+                      icon: Icon(Icons.file_upload_outlined),
+                      selectedIcon: Icon(Icons.file_upload),
+                      label: '上传',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.photo_outlined),
+                      selectedIcon: Icon(Icons.photo),
+                      label: '相册',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.storage_outlined),
+                      selectedIcon: Icon(Icons.storage),
+                      label: '仓库',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.settings_outlined),
+                      selectedIcon: Icon(Icons.settings),
+                      label: '设置',
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.photo_outlined),
-            selectedIcon: Icon(Icons.photo),
-            label: '相册',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.storage_outlined),
-            selectedIcon: Icon(Icons.storage),
-            label: '仓库',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: '设置',
-          ),
-        ],
+        ),
       ),
     );
   }

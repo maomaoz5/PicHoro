@@ -60,6 +60,18 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
   // 是否已加载所有图片
   bool _hasLoadedAll = false;
 
+  // 搜索相关
+  bool _isSearchMode = false;
+  String _searchQuery = '';
+  final FocusNode _searchFocusNode = FocusNode();
+  List _allImageUrlList = [];
+  List _allImageLocalPathList = [];
+  List _allImageFileNameList = [];
+  List _allImageIdList = [];
+  List _allImagePictureKeyList = [];
+  List _allImageDisplayedUrlList = [];
+  int _allLoadedImagesCount = 0;
+
   // 用于选择的列表 - Change to growable list
   List<bool> selectedImagesBoolList = [];
 
@@ -148,9 +160,88 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
     });
   }
 
+  void _searchEnter() {
+    setState(() {
+      _isSearchMode = true;
+      _allImageUrlList = List.from(imageUrlList);
+      _allImageLocalPathList = List.from(imageLocalPathList);
+      _allImageFileNameList = List.from(imageFileNameList);
+      _allImageIdList = List.from(imageIdList);
+      _allImagePictureKeyList = List.from(imagePictureKeyList);
+      _allImageDisplayedUrlList = List.from(imageDisplayedUrlList);
+      _allLoadedImagesCount = _loadedImagesCount;
+    });
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _searchFocusNode.requestFocus();
+    });
+  }
+
+  void _searchExit() {
+    setState(() {
+      _isSearchMode = false;
+      _searchQuery = '';
+      imageUrlList = List.from(_allImageUrlList);
+      imageLocalPathList = List.from(_allImageLocalPathList);
+      imageFileNameList = List.from(_allImageFileNameList);
+      imageIdList = List.from(_allImageIdList);
+      imagePictureKeyList = List.from(_allImagePictureKeyList);
+      imageDisplayedUrlList = List.from(_allImageDisplayedUrlList);
+      _loadedImagesCount = _allLoadedImagesCount;
+      _hasLoadedAll = _loadedImagesCount >= imageUrlList.length;
+      selectedImagesBoolList = List.filled(imageUrlList.length, false, growable: true);
+      _allImageUrlList.clear();
+      _allImageLocalPathList.clear();
+      _allImageFileNameList.clear();
+      _allImageIdList.clear();
+      _allImagePictureKeyList.clear();
+      _allImageDisplayedUrlList.clear();
+    });
+    _searchFocusNode.unfocus();
+  }
+
+  void _searchFilterResults(String query) {
+    setState(() {
+      _searchQuery = query.trim().toLowerCase();
+      imageUrlList.clear();
+      imageLocalPathList.clear();
+      imageFileNameList.clear();
+      imageIdList.clear();
+      imagePictureKeyList.clear();
+      imageDisplayedUrlList.clear();
+
+      if (_searchQuery.isEmpty) {
+        imageUrlList.addAll(_allImageUrlList);
+        imageLocalPathList.addAll(_allImageLocalPathList);
+        imageFileNameList.addAll(_allImageFileNameList);
+        imageIdList.addAll(_allImageIdList);
+        imagePictureKeyList.addAll(_allImagePictureKeyList);
+        imageDisplayedUrlList.addAll(_allImageDisplayedUrlList);
+      } else {
+        for (int i = 0; i < _allImageFileNameList.length; i++) {
+          final name = _allImageFileNameList[i].toString().toLowerCase();
+          final url = _allImageUrlList[i].toString().toLowerCase();
+          final path = _allImageLocalPathList[i].toString().toLowerCase();
+          if (name.contains(_searchQuery) || url.contains(_searchQuery) || path.contains(_searchQuery)) {
+            imageUrlList.add(_allImageUrlList[i]);
+            imageLocalPathList.add(_allImageLocalPathList[i]);
+            imageFileNameList.add(_allImageFileNameList[i]);
+            imageIdList.add(_allImageIdList[i]);
+            imagePictureKeyList.add(_allImagePictureKeyList[i]);
+            imageDisplayedUrlList.add(_allImageDisplayedUrlList[i]);
+          }
+        }
+      }
+
+      _loadedImagesCount = imageUrlList.length;
+      _hasLoadedAll = true;
+      selectedImagesBoolList = List.filled(imageUrlList.length, false, growable: true);
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchFocusNode.dispose();
     actionEventBus.cancel();
     super.dispose();
   }
@@ -191,19 +282,39 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-          title: Column(
-            children: [
-              titleText(
-                '${nameToPara[Global.defaultShowedPBhost]}相册',
-              ),
-              if (selectedImagesBoolList.contains(true))
-                Text(
-                  '已选择 ${selectedImagesBoolList.where((selected) => selected).length} 项',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+          title: _isSearchMode
+              ? TextField(
+                  focusNode: _searchFocusNode,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  decoration: InputDecoration(
+                    hintText: '搜索图片名称、URL...',
+                    hintStyle: const TextStyle(color: Colors.white60),
+                    border: InputBorder.none,
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.white70, size: 20),
+                            onPressed: () {
+                              _searchExit();
+                            },
+                          )
+                        : null,
+                  ),
+                  onChanged: _searchFilterResults,
+                )
+              : Column(
+                  children: [
+                    titleText(
+                      '${nameToPara[Global.defaultShowedPBhost]}相册',
+                    ),
+                    if (selectedImagesBoolList.contains(true) && !_isSearchMode)
+                      Text(
+                        '已选择 ${selectedImagesBoolList.where((selected) => selected).length} 项',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+                      ),
+                  ],
                 ),
-            ],
-          ),
-          centerTitle: true,
+          centerTitle: _isSearchMode ? false : true,
           systemOverlayStyle: const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
           ),
@@ -211,6 +322,20 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
           flexibleSpace: getFlexibleSpace(context),
           elevation: 0,
           actions: [
+            IconButton(
+              icon: Icon(
+                _isSearchMode ? Icons.close : Icons.search,
+                color: Colors.white,
+                size: 28,
+              ),
+              onPressed: () {
+                if (_isSearchMode) {
+                  _searchExit();
+                } else {
+                  _searchEnter();
+                }
+              },
+            ),
             PopupMenuButton(
                 icon: const Icon(
                   Icons.settings,
@@ -384,7 +509,7 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                 child: _isLoading && imageUrlList.isEmpty
                     ? const Center(child: CircularProgressIndicator())
                     : imageUrlList.isEmpty
-                        ? const Center(child: Text('暂无图片'))
+                        ? Center(child: Text(_isSearchMode ? '未找到匹配的图片' : '暂无图片'))
                         : GridView.builder(
                             controller: _scrollController,
                             padding: const EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 60),
@@ -423,30 +548,31 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                                         child: _buildImageWidget(index),
                                       ),
                                     ),
-                                    Positioned(
-                                      right: 4,
-                                      top: 4,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.all(Radius.circular(35)),
-                                            color: Color.fromARGB(255, 199, 208, 216)),
-                                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                        child: MSHCheckbox(
-                                          colorConfig: MSHColorConfig.fromCheckedUncheckedDisabled(
-                                              checkedColor: Colors.blue,
-                                              uncheckedColor: Colors.blue,
-                                              disabledColor: Colors.grey),
-                                          size: 20,
-                                          value: selectedImagesBoolList[index],
-                                          style: MSHCheckboxStyle.fillScaleCheck,
-                                          onChanged: (bool selected) {
-                                            setState(() {
-                                              selectedImagesBoolList[index] = selected;
-                                            });
-                                          },
+                                    if (!_isSearchMode)
+                                      Positioned(
+                                        right: 4,
+                                        top: 4,
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.all(Radius.circular(35)),
+                                              color: Color.fromARGB(255, 199, 208, 216)),
+                                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                          child: MSHCheckbox(
+                                            colorConfig: MSHColorConfig.fromCheckedUncheckedDisabled(
+                                                checkedColor: Colors.blue,
+                                                uncheckedColor: Colors.blue,
+                                                disabledColor: Colors.grey),
+                                            size: 20,
+                                            value: selectedImagesBoolList[index],
+                                            style: MSHCheckboxStyle.fillScaleCheck,
+                                            onChanged: (bool selected) {
+                                              setState(() {
+                                                selectedImagesBoolList[index] = selected;
+                                              });
+                                            },
+                                          ),
                                         ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               );
@@ -504,6 +630,9 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                       label: '主页',
                       color: Colors.blue,
                       onPressed: () async {
+                        if (_isSearchMode) {
+                          _searchExit();
+                        }
                         setState(() {
                           _loadedImagesCount = 0;
                           imageUrlList.clear();
@@ -520,10 +649,16 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                     ActionButton(
                       icon: Icons.copy,
                       label: '复制',
-                      color: selectedImagesBoolList.contains(true)
-                          ? const Color.fromARGB(255, 232, 177, 241)
-                          : Colors.grey,
+                      color: _isSearchMode
+                          ? Colors.grey
+                          : (selectedImagesBoolList.contains(true)
+                              ? const Color.fromARGB(255, 232, 177, 241)
+                              : Colors.grey),
                       onPressed: () async {
+                        if (_isSearchMode) {
+                          showToastWithContext(context, "请先退出搜索");
+                          return;
+                        }
                         if (!selectedImagesBoolList.contains(true)) {
                           showToastWithContext(context, "请先选择图片");
                           return;
@@ -542,9 +677,13 @@ class UploadedImagesState extends State<UploadedImages> with AutomaticKeepAliveC
                     ),
                     ActionButton(
                       icon: selectedImagesBoolList.contains(true) ? Icons.deselect : Icons.select_all,
-                      label: selectedImagesBoolList.contains(true) ? '取消' : '全选',
-                      color: const Color.fromARGB(255, 248, 196, 237),
+                      label: _isSearchMode ? '搜索中' : (selectedImagesBoolList.contains(true) ? '取消' : '全选'),
+                      color: _isSearchMode ? Colors.grey : const Color.fromARGB(255, 248, 196, 237),
                       onPressed: () {
+                        if (_isSearchMode) {
+                          showToastWithContext(context, "请先退出搜索");
+                          return;
+                        }
                         if (imageUrlList.isEmpty) {
                           showToastWithContext(context, '相册为空');
                           return;

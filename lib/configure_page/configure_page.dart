@@ -129,7 +129,7 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                 .listen(
               (OtaEvent event) {
                 if (event.status == OtaStatus.DOWNLOADING) {
-                  showToast('下载进度: ${event.value}%');
+                  showToast('下载进度：${event.value}%');
                 } else if (event.status == OtaStatus.INSTALLING) {
                   showToast('正在安装更新...');
                 } else if (event.status == OtaStatus.DOWNLOAD_ERROR) {
@@ -141,14 +141,14 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                 }
               },
               onError: (error) {
-                showToast('更新失败: $error');
+                showToast('更新失败：$error');
               },
               onDone: () {
                 _updateSubscription = null;
               },
             );
           } catch (e) {
-            showToast('更新失败: $e');
+            showToast('更新失败：$e');
           }
         },
       );
@@ -157,17 +157,17 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
     }
   }
 
-  Widget _buildSettingCard({required String title, required List<Widget> children}) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          ),
-          ...children,
-        ],
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -181,18 +181,22 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
     Widget? subtitle,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    final bgColor = iconColor ?? colorScheme.primary.withValues(alpha: 0.1);
-    final fgColor = iconColor ?? colorScheme.primary;
+    final bgColor = iconColor ?? colorScheme.primaryContainer;
+    final fgColor = iconColor ?? colorScheme.onPrimaryContainer;
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Icon(icon, color: fgColor, size: 20),
       ),
-      title: Text(title),
+      title: Text(title, style: const TextStyle(fontSize: 15)),
       subtitle: subtitle,
       onTap: onTap,
-      trailing: trailing ?? Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
+      trailing: trailing ?? Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
     );
   }
 
@@ -204,54 +208,45 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
 
     return Scaffold(
       appBar: AppBar(
-        title: titleText('设置页面'),
+        title: titleText('设置'),
         flexibleSpace: getFlexibleSpace(context),
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         children: [
+          // App Info Header
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colorScheme.primary.withValues(alpha: 0.08),
-                  colorScheme.primary.withValues(alpha: 0.02),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
             child: Column(
               children: [
                 Hero(
                   tag: 'app_logo',
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
                           color: colorScheme.primary.withValues(alpha: 0.15),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       child: const SizedBox(
-                        width: 80,
-                        height: 80,
+                        width: 72,
+                        height: 72,
                         child: Image(image: AssetImage('assets/app_icon.png'), fit: BoxFit.cover),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Text(
                   'PicHoro',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
                   ),
@@ -262,22 +257,22 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                     onTap: _checkUpdate,
                     child: Container(
                       margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
                         color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.new_releases, color: colorScheme.onPrimaryContainer, size: 15),
-                          const SizedBox(width: 6),
+                          Icon(Icons.new_releases, color: colorScheme.onPrimaryContainer, size: 14),
+                          const SizedBox(width: 5),
                           Text(
                             'v$version  →  v$latestVersion',
                             style: TextStyle(
                               color: colorScheme.onPrimaryContainer,
                               fontWeight: FontWeight.w500,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -287,89 +282,80 @@ class ConfigurePageState extends State<ConfigurePage> with AutomaticKeepAliveCli
                 else
                   Text(
                     'v$version',
-                    style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 4),
-          _buildSettingCard(
-            title: '基础配置',
-            children: [
-              _buildSettingItem(
-                title: '图床参数设置',
-                icon: Icons.cloud_upload,
-                onTap: () =>
-                    Application.router.navigateTo(context, Routes.allPShost, transition: TransitionType.cupertino),
-              ),
-              const Divider(height: 1, indent: 56),
-              _buildSettingItem(
-                title: '常规设置',
-                icon: Icons.settings,
-                onTap: () =>
-                    Application.router.navigateTo(context, Routes.commonConfig, transition: TransitionType.cupertino),
-              ),
-            ],
+
+          // Basic Settings
+          _buildSectionHeader('基础配置'),
+          _buildSettingItem(
+            title: '图床参数设置',
+            icon: Icons.cloud_upload,
+            onTap: () =>
+                Application.router.navigateTo(context, Routes.allPShost, transition: TransitionType.cupertino),
           ),
-          _buildSettingCard(
-            title: '应用信息',
-            children: [
-              _buildSettingItem(
-                title: '软件日志',
-                icon: Icons.description,
-                onTap: () => Application.router
-                    .navigateTo(context, Routes.configurePageLogger, transition: TransitionType.cupertino),
-              ),
-              const Divider(height: 1, indent: 56),
-              _buildSettingItem(
-                title: _updateAvailable ? '有新版本！' : '检查更新',
-                icon: Icons.system_update,
-                onTap: _checkUpdate,
-                subtitle: _isLoading ? const Text('正在检查...') : null,
-                trailing: _updateAvailable
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.upload, color: colorScheme.onPrimaryContainer, size: 14),
-                            const SizedBox(width: 4),
-                            Text('更新', style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 12, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      )
-                    : Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
-              ),
-              const Divider(height: 1, indent: 56),
-              _buildSettingItem(
-                title: '更新日志',
-                icon: Icons.history,
-                onTap: () =>
-                    Application.router.navigateTo(context, Routes.updateLog, transition: TransitionType.cupertino),
-              ),
-            ],
+          _buildSettingItem(
+            title: '常规设置',
+            icon: Icons.settings,
+            onTap: () =>
+                Application.router.navigateTo(context, Routes.commonConfig, transition: TransitionType.cupertino),
           ),
-          _buildSettingCard(
-            title: '帮助',
-            children: [
-              _buildSettingItem(
-                title: '使用手册',
-                icon: Icons.menu_book,
-                onTap: () async {
-                  Application.router.navigateTo(
-                    context,
-                    '${Routes.webviewPage}?url=${Uri.encodeComponent('https://pichoro.horosama.com')}&title=${Uri.encodeComponent('使用手册')}&enableJs=${Uri.encodeComponent('true')}',
-                    transition: TransitionType.inFromRight,
-                  );
-                },
-              ),
-            ],
+
+          // App Info
+          _buildSectionHeader('应用信息'),
+          _buildSettingItem(
+            title: '软件日志',
+            icon: Icons.description,
+            onTap: () => Application.router
+                .navigateTo(context, Routes.configurePageLogger, transition: TransitionType.cupertino),
           ),
-          const SizedBox(height: 24),
+          _buildSettingItem(
+            title: _updateAvailable ? '有新版本！' : '检查更新',
+            icon: Icons.system_update,
+            onTap: _checkUpdate,
+            subtitle: _isLoading ? const Text('正在检查...') : null,
+            trailing: _updateAvailable
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.upload, color: colorScheme.onPrimaryContainer, size: 13),
+                        const SizedBox(width: 4),
+                        Text('更新', style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 11, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  )
+                : Icon(Icons.chevron_right, size: 20, color: colorScheme.outline),
+          ),
+          _buildSettingItem(
+            title: '更新日志',
+            icon: Icons.history,
+            onTap: () =>
+                Application.router.navigateTo(context, Routes.updateLog, transition: TransitionType.cupertino),
+          ),
+
+          // Help
+          _buildSectionHeader('帮助'),
+          _buildSettingItem(
+            title: '使用手册',
+            icon: Icons.menu_book,
+            onTap: () async {
+              Application.router.navigateTo(
+                context,
+                '${Routes.webviewPage}?url=${Uri.encodeComponent('https://pichoro.horosama.com')}&title=${Uri.encodeComponent('使用手册')}&enableJs=${Uri.encodeComponent('true')}',
+                transition: TransitionType.inFromRight,
+              );
+            },
+          ),
+
+          const SizedBox(height: 32),
         ],
       ),
     );

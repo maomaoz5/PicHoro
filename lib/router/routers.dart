@@ -16,6 +16,7 @@ class Routes {
   static String configurePage = "/configurePage";
   static String configurePageLogger = "/configurePageLogger";
   static String compressConfigurePage = "/compressConfigurePage";
+  static String watermarkConfigurePage = "/watermarkConfigurePage";
   static String appPassword = "/appPassword";
   static String allPShost = "/allPShost";
   static String defaultPShostSelect = "/defaultPShostSelect";
@@ -124,6 +125,7 @@ class Routes {
     router.define(localImagePreview, handler: localImagePreviewHandler);
     router.define(configurePage, handler: configurePageHandler);
     router.define(compressConfigurePage, handler: compressConfigureHandler);
+    router.define(watermarkConfigurePage, handler: watermarkConfigureHandler);
     router.define(allPShost, handler: allPShostHandler);
     router.define(defaultPShostSelect, handler: defaultPShostSelectHandler);
     router.define(lskyproPShostSelect, handler: lskyproPShostSelectHandler);
