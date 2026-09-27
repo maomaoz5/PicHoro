@@ -34,18 +34,13 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate CI signing keystore
+      - name: Setup signing
         run: |
-          keytool -genkeypair -v -noprompt \
-            -keystore "$GITHUB_WORKSPACE/android/ci-key.jks" \
-            -storepass 123456 -keypass 123456 -alias ci \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=PicHoro CI, OU=Dev, O=PicHoro, C=US"
           {
             echo "storePassword=123456"
             echo "keyPassword=123456"
-            echo "keyAlias=ci"
-            echo "storeFile=$GITHUB_WORKSPACE/android/ci-key.jks"
+            echo "keyAlias=pichoro"
+            echo "storeFile=release-key.jks"
           } > "$GITHUB_WORKSPACE/android/key.properties"
 
       - name: Install dependencies
