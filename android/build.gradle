@@ -21,8 +21,11 @@ allprojects {
                     if (namespace == null) {
                         namespace project.group
                     }
-                    // ota_update 等老插件 compileSdk 过低，其依赖的 androidx 需要 API 31 的 android:attr/lStar
-                    compileSdkVersion 35
+                    // 仅 ota_update 需提升 compileSdk 以解析 androidx 的 android:attr/lStar；
+                    // 全局提升会使 receive_intent 等插件因 SDK35 的可空注解编译失败
+                    if (project.name == 'ota_update') {
+                        compileSdkVersion 35
+                    }
                 }
             }
             if (project.plugins.hasPlugin("com.android.application") || project.plugins.hasPlugin("com.android.library")) {
